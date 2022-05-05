@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Добавление объявления</title>
+    <style>
+        .massageFont {
+            font-weight: bold;
+            color: red;
+            font-size: 18px
+        }
+
+        .myInput1 {
+            display: block;
+            width: 50%;
+            height: 30px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+        .myInput2 {
+            display: block;
+            width: 15%;
+            height: 30px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+        .myInput3 {
+            display: block;
+            width: 70%;
+            height: 150px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <h2>Добавить новое объявление</h2>
+    <form name="massageForm" method="post">
+        <output id="massageLab" class="massageFont"></output>
+    </form>
+    <form name="adForm">
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="titleField">Название:</label>
+            <input type="text"  class="myInput1" placeholder="Не более 200 символов" name="titleField"  />
+        </div>
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="priceField">Цена:</label>
+            <input type="number" value="0" class="myInput2" step="0.01" name="priceField" />
+        </div>
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="descriptionField">Описание:</label>
+            <textarea class="myInput3"  name="descriptionField" placeholder="Не более 1000 символов" ></textarea>
+        </div>
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="imageField1">Ссылка на фото:</label>
+            <input class="myInput1" name="imageField1" type="url" />
+        </div>
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="imageField2">Ссылка на фото:</label>
+            <input class="myInput1" name="imageField2" type="url" />
+        </div>
+        <div style="padding: 10px 10px 10px;">
+            <label class="form-label" for="imageField3">Ссылка на фото:</label>
+            <input class="myInput1" name="imageField3" type="url" />
+        </div>
+        <div style="padding: 10px 20px 10px;">
+            <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+        </div>
+
+    </form>
+    
+    <script>
+        // Очистка формы
+        function resetForm() {
+            const form = document.forms["adForm"];
+            form.reset();
+        }
+
+        // Добавление нового объявления
+        async function createNewAd(adTitle, adPrice, adDescription, adURL1, adURL2, adURL3) {
+            const response = await fetch("/api/ads", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: adTitle,
+                    price: adPrice,
+                    description: adDescription,
+                    image1: adURL1,
+                    image2: adURL2,
+                    image3: adURL3
+                })
+            });
+            if (response.ok === true) {
+                const id = await response.json();
+                //const form = document.forms["adForm"];
+                //form.elements["idField"].value = id;
+                document.getElementById("massageLab").value = ("Обьявление успешно добавлено: ID обьявления - " + id);
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+                document.getElementById("massageLab").value = (error.message)
+            }
+        }
+        //Сохраняем данные, веденные с формы
+        document.forms["adForm"].addEventListener("submit", e => {
+            e.preventDefault();
+            const form = document.forms["adForm"];
+            const title = form.elements["titleField"].value;
+            const price = form.elements["priceField"].value;
+            const description = form.elements["descriptionField"].value;
+            const image1 = form.elements["imageField1"].value;
+            const image2 = form.elements["imageField2"].value;
+            const image3 = form.elements["imageField3"].value;
+
+            createNewAd(title, price, description, image1, image2, image3);
+        });
+
+
+    </script>
+
+
+</body>
+</html >

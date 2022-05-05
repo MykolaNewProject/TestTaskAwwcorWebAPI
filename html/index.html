@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Сервис объявлений</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .sort {
+            margin: 20px 0px 0px 20px;
+            text-align: right;
+        }
+
+       .sort a {
+                color: blue;
+                text-decoration: underline;
+                }
+        .myInput1 {
+            display: block;
+            width: 50%;
+            height: 30px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+
+        .myInput2 {
+            display: block;
+            width: 15%;
+            height: 30px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+
+        .myInput3 {
+            display: block;
+            width: 70%;
+            height: 150px;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
+    </style>
+</head>
+<body>
+    <h2>Объявления</h2>
+
+    <form>
+        <input type="text" id="idField" class="form-control" pattern="\w{8}-\w{4}-\w{4}-\w{4}-\w{12}" required placeholder="хххххххх-хххх-хххх-хххх-хххххххххххх" />
+        <div style="padding: 10px 10px 10px;">
+            <button id="getAdByIdBtn" type="submit" class="btn btn-sm btn-primary">Найти бъявление по ID</button>
+            <a href="/AddNewAd.html" class="btn btn-sm btn-primary">Добавить объявление</a>
+        </div>
+    </form>
+    <form id = sorts>
+    <div style="padding: 10px 10px 10px;">
+        <div id =" divSort"  name =" divSort" class="sort">
+            Сортировать по  :<strong> Цене </strong>(<a id="sortByPriceUp" href=" "> по возрастанию </a>/ <a id="sortByPriceDown" href=" "> по убыванию </a>);
+            <strong> Дате </strong>(<a id="sortByDateUp" href=" "> по возрастанию </a>/<a id="sortByDateDown" href=" "> по убыванию </a>)
+        </div>
+    </div>
+        </form>
+   
+    <table class="table table-condensed table-striped table-bordered">
+        <thead><tr><th>Название</th><th>Цена</th><th>Ссылка на фото</th><th></th></tr></thead>
+        <tbody></tbody>
+    </table>
+    <form name="ViewAdForm">
+            </form>
+
+     <form name = "navPagin">
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item"><a id ="PaginPrevLink" class="page-link" href="" >Предыдущая</a></li>
+            <li class="page-item"><a id ="countPaginLink" name="countPaginLink" class="page-link" ></a></li>
+            <li class="page-item"><a id ="PaginNextLink" class="page-link" href="" >Следующая</a></li>
+        </ul>
+    </nav>
+        </form>
+
+    <script>
+
+        let ads = new Array();
+        const rows = document.querySelector("tbody");
+        var argSort = null;
+        let pageNum = 1;       
+
+        // переключение следующей страницы
+        async function pagenationNext()
+        {
+            if (ads.nextPage === true)
+            {
+                pageNum = ads.pageNuber + 1
+                getAllAds(pageNum, argSort);
+            }
+        }
+        // переключение предидущей страницы
+        async function pagenationPrev() {  
+            if (ads.prevPage === true)
+            {
+                pageNum = ads.pageNuber - 1
+                getAllAds(pageNum, argSort);
+            }
+            }
+ 
+        // Получение всех объявлений
+        async function getAllAds(pageNum,argSort) {
+            let path = "/api/ads" + "?Pages=" + pageNum;
+            let response;
+            if (argSort === "SortByPriceUp") {
+                // отправляет запрос и получаем ответ с сортировкой по цене возрастанию
+                path = path + "&SortByPriceUp";
+ 
+            }
+            else if (argSort === "SortByPriceDown") {
+                // отправляет запрос и получаем ответс  сортировкой по цене убыванию
+                path = path + "&SortByPriceDown";
+            }
+            else if (argSort === "SortByDateUp") {
+                // отправляет запрос и получаем ответ с сортировкой по дате возрастению
+                path = path + "&SortByDateUp";
+            }
+            else if (argSort === "SortByDateDown") {
+                // отправляет запрос  и получаем ответ с сортировкой по дате убыванию
+                path = path + "&SortByDateDown";
+            }                     
+                // отправляет запрос и получаем ответ
+                response = await fetch(path , {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                ads = await response.json();
+                rows.innerHTML = '';
+                const form = document.forms["ViewAdForm"];
+                form.innerHTML = ''
+                document.getElementById("countPaginLink").textContent = ads.pageNuber;
+                ads.ads.forEach(ad => rows.append(row(ad)));
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+                alert(error.message);
+            }
+        }
+        // Получение указанного объявления по ID
+        async function getAdById(id, fields) {
+            let response;
+            if (fields === true) {
+                response = await fetch("/api/ads/" + id + "?fields", {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                });
+            }
+            else {
+                response = await fetch("/api/ads/" + id, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                });
+            }
+
+            if (response.ok === true) {
+                const ad = await response.json();
+                const navs = document.querySelector("nav")
+                navs.innerHTML = '';
+                const divSorts = document.getElementById("sorts");
+                divSorts.innerHTML = '';
+
+                rows.innerHTML = '';
+                const tr = document.createElement("tr");
+
+                const titleTd = document.createElement("td");
+                titleTd.append(ad.title);
+                tr.append(titleTd);
+
+                const priceTd = document.createElement("td");
+                priceTd.append(ad.price);
+                tr.append(priceTd);
+
+                const image1Td = document.createElement("td");
+                image1Td.append(ad.image1);
+                tr.append(image1Td);
+
+                const linksTd = document.createElement("td");
+
+                const detailsLink = document.createElement("a");
+                detailsLink.setAttribute("style", "cursor:pointer;padding:15px;");
+                detailsLink.append("Детали");
+                detailsLink.addEventListener("click", e => {
+                    e.preventDefault();
+                    let id = ad.id;
+                    ViewMoreInformationAd(id);
+                });
+                
+                linksTd.append(detailsLink);
+
+                tr.appendChild(linksTd);
+                rows.append(tr);
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+                alert(error.message);
+            }
+        }
+        async function ViewMoreInformationAd(ad) {
+
+            let response = await fetch("/api/ads/" + ad + "?fields", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (response.ok === true) {
+                const ad = await response.json();
+                rows.innerHTML = '';
+                const navs = document.querySelector("nav")
+                navs.innerHTML = '';
+                const tr = document.createElement("tr");
+                const divSorts = document.getElementById("sorts");
+                divSorts.innerHTML = '';
+
+                const titleTd = document.createElement("td");
+                titleTd.append(ad.title);
+                tr.append(titleTd);
+
+                const priceTd = document.createElement("td");
+                priceTd.append(ad.price);
+                tr.append(priceTd);
+
+                const image1Td = document.createElement("td");
+                image1Td.append(ad.image1);
+                tr.append(image1Td);
+
+                const image2Td = document.createElement("td");
+                image2Td.append(ad.image2);
+                tr.append(image2Td);
+
+                const image3Td = document.createElement("td");
+                image3Td.append(ad.image3);
+                tr.append(image3Td);
+
+                rows.append(tr);
+
+                const form = document.forms["ViewAdForm"];
+                form.innerHTML = ''
+                const descriptionLabel = document.createElement("label");
+                descriptionLabel.setAttribute("class", "form-label");
+                descriptionLabel.textContent = "Описание";
+                form.append(descriptionLabel);
+
+                const descriptionOutput = document.createElement("output");
+                descriptionOutput.setAttribute("class", "myInput3");
+                descriptionOutput.textContent = ad.description;
+                form.append(descriptionOutput);
+
+           }
+        }
+
+        // создание строки для таблицы
+        function row(ad) {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", ad.id);
+
+            const titleTd = document.createElement("td");
+            titleTd.append(ad.title);
+            tr.append(titleTd);
+
+            const priceTd = document.createElement("td");
+            priceTd.append(ad.price);
+            tr.append(priceTd);
+
+            const image1Td = document.createElement("td");
+            image1Td.append(ad.image1);
+            tr.append(image1Td);
+
+            return tr;
+        }
+
+        //button get ad by id 
+        document.getElementById("getAdByIdBtn").addEventListener("click", e => {
+            e.preventDefault();
+             const id = document.getElementById("idField").value;
+            getAdById(id, false);
+        });
+
+        //link go to the previos page
+      document.getElementById("PaginPrevLink").addEventListener("click", e => {
+           e.preventDefault();
+            pagenationPrev();
+        });
+        //  link go to the next page
+        document.getElementById("PaginNextLink").addEventListener("click", e => {
+            e.preventDefault();
+            pagenationNext();
+        });
+        // link sort by price up
+        document.getElementById("sortByPriceUp").addEventListener("click", e => {
+            e.preventDefault();
+            argSort = "SortByPriceUp";
+            getAllAds(pageNum, argSort);
+        });
+
+        // link sort by price down
+        document.getElementById("sortByPriceDown").addEventListener("click", e => {
+           e.preventDefault();
+            argSort = "SortByPriceDown";
+            getAllAds(pageNum, argSort);
+        });
+
+        // link sort by date of createion up
+         document.getElementById("sortByDateUp").addEventListener("click", e => {
+           e.preventDefault();
+             argSort = "SortByDateUp";
+             getAllAds(pageNum, argSort);
+         });
+
+        // link sort by date of createion down
+          document.getElementById("sortByDateDown").addEventListener("click", e => {
+           e.preventDefault();
+              argSort = "SortByDateDown";
+              getAllAds(pageNum, argSort);
+        });
+
+        getAllAds(pageNum,argSort);
+    </script>
+</body>
+</html>
